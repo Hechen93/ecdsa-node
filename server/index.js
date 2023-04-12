@@ -2,19 +2,19 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const port = 3042;
+const secp = require('ethereum-cryptography/secp256k1');
+const { getAddress } = require('./scripts/generate'); //generates new private key and signatures each time
+const { keccak256 } = require('ethereum-cryptography/keccak');
+const { toHex, hexToBytes, utf8ToBytes } = require('ethereum-cryptography/utils');
 
 app.use(cors());
 app.use(express.json());
 
-//These need to be addresses
-//How to generate addresses:
-// 1. Slice off first byte of public key
-// 2. Hash result of step 1 using keccak256
-// 3. slice off the first 12 bytes of the keccak key hash == ethereum address
+//These are now addresses
 const balances = {
-  '040a6b4d495c905d464383cbb3291d624185528667d53390c2ef63b82d6e30d47ab9fe542b23516a30af4a4093cdadad36a41a6108c14776d67c991d784b42a8e5': 100,
-  '0de43f0fa1bb045434df4408522daae4d716f896': 50,
-  '0183d2de422100fb08015c018d55fc0c14420b7e': 75,
+  cd69181f0367794ed5ccd1fa6e3e762910a3c0b2: 100,
+  '9eb11dc561824b234c2b38b67b89b95aba5edb1d': 50,
+  '003eec340a976332a81b4320b5c651a8e08dee5e': 75,
 };
 
 app.get('/balance/:address', (req, res) => {
@@ -27,10 +27,27 @@ app.get('/balance/:address', (req, res) => {
  Recover the public address from the signature*/
 
 app.post('/send', (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const { sender, recipient, amount, signature, msgHash, recoveryBit } = req.body;
 
   setInitialBalance(sender);
   setInitialBalance(recipient);
+
+  //Server generated signature, looking for address
+  const publicKey = secp.recoverPublicKey(hexToBytes(msgHash), signature, recoveryBit);
+
+  const address = getAddress(publicKey);
+
+  const validPublicKey = toHex(address) === sender;
+
+  if (!validPublicKey) {
+    return res.status(400).send({ message: 'Sender and signature do not match.' });
+  }
+
+  const verifiedSig = secp.verify(signature, hexToBytes(msgHash), publicKey);
+
+  if (!verifiedSig) {
+    return res.status.send(400).send({ message: 'Signature not valid' });
+  }
 
   if (balances[sender] < amount) {
     res.status(400).send({ message: 'Not enough funds!' });
