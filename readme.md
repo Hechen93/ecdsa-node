@@ -1,8 +1,11 @@
 ## Week 1 Alchemy Bootcamp Project ECDSA Node
 
 This project is my first draft version of the ECDSA client-server transfer balance project. This is my first real run at
-anything using React hooks on the front end. Shout out to the Alchemy community for helping me work through the learning
-curve.
+anything using React hooks on the front end. This project was a real struggle for me to understand not just how the
+signatures should be generated and validated by the client and server respectively, but also how project files should be
+extracted, and how React components are updated via useState() and useEffect(). Shout out to the Alchemy community for
+helping me work through the learning curve. In the future, I plan to revisit this project and update the UI so that I
+can further my understanding on React.
 
 In this project we see an example of a client attempting to view and transfer funds by communicating with a single
 server. While this is a centralized example, the idea is that the transfer cannot occur without a proper private key
