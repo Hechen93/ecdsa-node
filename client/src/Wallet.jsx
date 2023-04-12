@@ -7,7 +7,7 @@ import { toHex } from 'ethereum-cryptography/utils';
 function Wallet({ address, setAddress, balance, setBalance }) {
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
-  async function fetchBalance() {
+  async function getBalance() {
     if (address) {
       const {
         data: { balance },
@@ -20,7 +20,7 @@ function Wallet({ address, setAddress, balance, setBalance }) {
 
   useEffect(() => {
     if (address) {
-      fetchBalance();
+      getBalance();
     }
   }, [address]);
 
